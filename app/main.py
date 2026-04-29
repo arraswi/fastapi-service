@@ -1,51 +1,71 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from pydantic import BaseModel, Field
 from typing import List, Optional
+from datetime import datetime
+import jwt
 
-app = FastAPI(title="FastAPI Service", version="2.0.0")
+app = FastAPI(title="FastAPI Service", version="2.0.0", docs_url="/docs")
+
+security = HTTPBearer()
+SECRET_KEY = "your-secret-key"
 
 class Item(BaseModel):
     id: Optional[int] = None
-    name: str
-    price: float
+    name: str = Field(..., min_length=1, max_length=100)
+    price: float = Field(..., gt=0)
     description: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+class User(BaseModel):
+    username: str
+    email: str
+    active: bool = True
 
 items = []
+users = []
 
-@app.get("/")
+def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=["HS256"])
+        return payload
+    except:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+@app.get("/", tags=["Root"])
 async def root():
-    return {"message": "FastAPI Service Running"}
+    return {"message": "FastAPI Service Running", "version": "2.0.0"}
 
-@app.get("/items", response_model=List[Item])
+@app.get("/items", response_model=List[Item], tags=["Items"])
 async def get_items():
     return items
 
-@app.get("/items/{item_id}", response_model=Item)
-async def get_item(item_id: int):
-    item = next((i for i in items if i.id == item_id), None)
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-    return item
-
-@app.post("/items", response_model=Item, status_code=201)
+@app.post("/items", response_model=Item, status_code=status.HTTP_201_CREATED, tags=["Items"])
 async def create_item(item: Item):
     item.id = len(items) + 1
+    item.created_at = datetime.now()
     items.append(item)
     return item
 
-@app.put("/items/{item_id}", response_model=Item)
+@app.put("/items/{item_id}", response_model=Item, tags=["Items"])
 async def update_item(item_id: int, updated: Item):
     for i, item in enumerate(items):
         if item.id == item_id:
             updated.id = item_id
+            updated.created_at = item.created_at
             items[i] = updated
             return updated
     raise HTTPException(status_code=404, detail="Item not found")
 
-@app.delete("/items/{item_id}")
+@app.delete("/items/{item_id}", tags=["Items"])
 async def delete_item(item_id: int):
     for i, item in enumerate(items):
         if item.id == item_id:
             items.pop(i)
             return {"message": "Item deleted"}
     raise HTTPException(status_code=404, detail="Item not found")
+
+@app.post("/login", tags=["Auth"])
+async def login(username: str, password: str):
+    token = jwt.encode({"sub": username}, SECRET_KEY, algorithm="HS256")
+    return {"access_token": token, "token_type": "bearer"}

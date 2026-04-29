@@ -1,21 +1,55 @@
 # FastAPI Service
 
-Modern API built with FastAPI and Pydantic.
+Modern, production-ready API built with FastAPI and Pydantic.
 
 ## Features
 
-- ⚡ Fast performance with FastAPI
-- 📝 Automatic OpenAPI documentation
-- ✅ Data validation with Pydantic
-- 🧪 Test suite with pytest
+- ⚡ High performance with FastAPI
+- 📝 Automatic OpenAPI (Swagger) documentation
+- ✅ Data validation with Pydantic v2
+- 🔐 JWT Authentication ready
+- 🧪 Complete test suite with pytest
+- 📊 API versioning support
 
-## Installation
+## Quick Start
 
 ```bash
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 8000
 ```
 
-## Documentation
+## API Documentation
 
-Visit http://localhost:8000/docs
+Visit: http://localhost:8000/docs
+
+## Endpoints
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | / | API info | No |
+| GET | /items | List all items | No |
+| POST | /items | Create item | No |
+| PUT | /items/:id | Update item | No |
+| DELETE | /items/:id | Delete item | No |
+| POST | /login | Get JWT token | No |
+
+## Testing
+
+```bash
+pytest -v
+```
+
+## Project Structure
+
+```
+app/
+├── main.py      # FastAPI app and endpoints
+├── models.py    # Pydantic models
+└── __init__.py
+tests/
+└── test_main.py # Test suite
+```
+
+## License
+
+MIT
