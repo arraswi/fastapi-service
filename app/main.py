@@ -4,11 +4,19 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
 import jwt
+import os
 
 app = FastAPI(title="FastAPI Service", version="2.0.0", docs_url="/docs")
 
 security = HTTPBearer()
-SECRET_KEY = "your-secret-key"
+SECRET_KEY = os.environ.get("SECRET_KEY", "")
+if (
+    len(SECRET_KEY.strip().encode("utf-8")) < 32
+    or SECRET_KEY.strip() in {"your-secret-key", "your-secret-key-here"}
+):
+    raise RuntimeError(
+        "Set SECRET_KEY to a unique random value of at least 32 bytes."
+    )
 
 class Item(BaseModel):
     id: Optional[int] = None

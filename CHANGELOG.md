@@ -1,23 +1,14 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
-
 ## [Unreleased]
 
 ### Added
-- Initial project structure
-- Basic functionality
-- Test suite
-- CI/CD pipeline
+- Environment configuration template with no default signing key.
+- Explicit dependencies for JWT, dotenv loading, and API tests.
+- Regression tests for signing-key configuration and JWT signing.
 
 ### Changed
-- Improved documentation
-- Better error handling
-
-### Fixed
-- Minor bug fixes
-
-## [1.0.0] - 2024-01-01
-
-### Added
-- Initial release
+- Load the JWT signing key from SECRET_KEY and reject missing or unsafe values.
+- Document local configuration, in-memory storage, and authentication limitations.
+- Ignore environment files while retaining .env.example.
+- Isolate in-memory application state between API tests.
